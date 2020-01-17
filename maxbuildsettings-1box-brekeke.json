@@ -1,0 +1,78 @@
+{
+"config": {
+	"customerName": "{CUSTOMERNAME}",
+	"customerPrefix": "{CUSTOMERPREFIX}",
+	"customerDns": "",
+	"database": {
+		"createDatabase": "{CREATEDB}",
+		"name": "{CUSTOMERPREFIX}",
+		"serverName": "{DBSERVERNAME}",
+		"databaseName": "",
+		"databaseAddress": "",
+		"databasePort": "",
+		"databaseUser": "",
+		"databasePassword": ""
+	},
+	"subscription": "{SUBSCRIPTION}",
+	"resourceGroup": "",
+	"region": "{REGION}",
+	"updateBlock": "{UPDATEBLOCK}",
+	"telephonyServer": "{TELSERVERSIP}",
+	"telephonyRegistrar": "{TELSERVERREG}"
+},
+"deployment": {
+	"servers": [ 
+		{
+			"type": "main",
+			"systemType": "maxstandard",
+			"vmName": "",
+			"vmSuffix": "svm",
+			"osVersion": "2016-Datacenter",
+			"machineType": "{SERVERTYPE}",
+			"systemRoles": [],
+			"apps": [
+				{
+					"name": "Jre",
+					"version": "8u161",
+					"uri": "https://maxopsstorage.blob.core.windows.net/vmbootscripts/jre-8u161-windows-x64.exe?st=2019-12-03T11%3A12%3A05Z&se=2040-12-04T11%3A12%3A00Z&sp=rl&sv=2018-03-28&sr=b&sig=1XzDUiNlqEbKtXTXa7Hz6tZ42jjq3GJ6uDN30jwI47I%3D",
+					"type": "app",
+					"extension": "exe",
+					"arguments": "/s",
+					"force": true
+				},
+				{
+					"name": "Brekeke",
+					"version": "3.8.3.4",
+					"uri": "https://maxopsstorage.blob.core.windows.net/vmbootscripts/sip3_8_3_4.exe?st=2019-12-03T11%3A02%3A13Z&se=2040-12-04T11%3A02%3A00Z&sp=rl&sv=2018-03-28&sr=b&sig=bvvOrO3iJL1R7IbARuRKZJdjjXO6SfhVGUsEIVMsEfc%3D",
+					"type": "app",
+					"extension": "exe",
+					"arguments": "/S",
+					"force": true
+				}
+			],
+			"vnet": {
+				"create": false,
+				"vnetName": "{VNETNAME}",
+				"vnetResourceGroup": "{VNETRG}",
+				"vnetSubnet": "{VNETSUBNET}"
+			},
+			"firewall": {
+				"inbound": [
+					{"name": "MaxOffice", "rule": "80.169.18.240/29", "ports": "443 8081 8082 3389", "protocol": "tcp" },
+					{"name": "MaxOfficeUDP", "rule": "80.169.18.240/29", "ports": "5060-20000", "protocol": "udp" },
+					{"name": "AQL", "rule": "141.170.24.20/30 109.239.96.132/31 194.145.189.52/31 194.145.190.128/26 194.145.188.224/27 194.145.191.128/27 212.11.68.144/28 78.40.243.192/27", "ports": "5060-20000", "protocol": "udp" },
+					{"name": "AQLsip", "rule": "141.170.24.20/30 109.239.96.132/31 194.145.189.52/31 194.145.190.128/26 194.145.188.224/27 194.145.191.128/27 212.11.68.144/28 78.40.243.192/27", "ports": "5060", "protocol": "tcp" },
+					{"name": "Nexbridge", "rule": "149.5.103.0/24", "ports": "5060-20000", "protocol": "udp" },
+					{"name": "Nexbridgesip", "rule": "149.5.103.0/24", "ports": "5060", "protocol": "tcp" },
+					{"name": "Bastion", "rule": "52.164.187.64", "ports": "3389", "protocol": "tcp" },
+					{"name": "GCI-Signalling", "rule": "217.145.67.2", "ports": "5060", "protocol": "udp"},
+					{"name": "GCI-Media", "rule": "217.145.67.3", "ports": "30000-65000", "protocol": "udp"}
+				],
+				"outbound": []
+			},
+			"dns": [],
+			"drives": []
+		}
+	]
+}
+}

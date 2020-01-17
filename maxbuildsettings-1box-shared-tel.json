@@ -1,0 +1,112 @@
+{
+"config": {
+	"customerName": "{CUSTOMERNAME}",
+	"customerPrefix": "{CUSTOMERPREFIX}",
+	"customerDns": "",
+	"database": {
+		"createDatabase": "{CREATEDB}",
+		"name": "{CUSTOMERPREFIX}",
+		"serverName": "{DBSERVERNAME}",
+		"databaseName": "",
+		"databaseAddress": "",
+		"databasePort": "",
+		"databaseUser": "",
+		"databasePassword": ""
+	},
+	"subscription": "{SUBSCRIPTION}",
+	"resourceGroup": "",
+	"region": "{REGION}",
+	"updateBlock": "{UPDATEBLOCK}",
+	"telephonyServer": "{TELSERVERSIP}",
+	"telephonyRegistrar": "{TELSERVERREG}"
+},
+"deployment": {
+	"servers": [ 
+		{
+			"type": "main",
+			"systemType": "maxstandard",
+			"vmName": "",
+			"vmSuffix": "mvm",
+			"osVersion": "2016-Datacenter",
+			"machineType": "{SERVERTYPE}",
+			"systemRoles": ["iis"],
+			"apps": [
+				{
+					"name": "Servers",
+					"version": "2.19.1.0",
+					"uri": "https://devmaxstore.blob.core.windows.net/installers/release/Servers (Release)/MaxDialServers2.19.1.0.msi?sv=2018-03-28&ss=b&srt=sco&sp=rlc&se=2025-12-01T01:42:59Z&st=2019-09-07T16:42:59Z&spr=https&sig=XbW%2F8PmU1DV0BbZVpvylsU2isokz%2FrYfExWfrrvXu%2Bc%3D",
+					"type": "max",
+					"extension": "msi",
+					"force": true
+				},
+				{
+					"name": "Launcher",
+					"version": "2.19.1.0",
+					"uri": "https://devmaxstore.blob.core.windows.net/installers/release/Max Launcher (Release)/MaxLauncher2.19.1.0.msi?sv=2018-03-28&ss=b&srt=sco&sp=rlc&se=2025-12-01T01:42:59Z&st=2019-09-07T16:42:59Z&spr=https&sig=XbW%2F8PmU1DV0BbZVpvylsU2isokz%2FrYfExWfrrvXu%2Bc%3D",
+					"type": "max",
+					"extension": "msi",
+					"force": true
+				},
+				{
+					"name": "WebTools",
+					"version": "2.19.1.0",
+					"uri": "https://devmaxstore.blob.core.windows.net/installers/release/WebTools (Release)/WebTools2.19.1.0.msi?sv=2018-03-28&ss=b&srt=sco&sp=rlc&se=2025-12-01T01:42:59Z&st=2019-09-07T16:42:59Z&spr=https&sig=XbW%2F8PmU1DV0BbZVpvylsU2isokz%2FrYfExWfrrvXu%2Bc%3D",
+					"type": "max",
+					"extension": "msi",
+					"force": true
+				},
+				{
+					"name": "ScheduleServer",
+					"version": "2.19.1.0",
+					"uri": "https://devmaxstore.blob.core.windows.net/installers/release/Schedule Server & OData (Release)/ScheduleServer2.19.1.0.msi?sv=2018-03-28&ss=b&srt=sco&sp=rlc&se=2025-12-01T01:42:59Z&st=2019-09-07T16:42:59Z&spr=https&sig=XbW%2F8PmU1DV0BbZVpvylsU2isokz%2FrYfExWfrrvXu%2Bc%3D",
+					"type": "max",
+					"extension": "msi",
+					"force": true
+				},
+				{
+					"name": "Scripting",
+					"version": "2.19.1.0",
+					"uri": "https://devmaxstore.blob.core.windows.net/installers/release/Scripting (Release)/Scripting2.19.1.0.msi?sv=2018-03-28&ss=b&srt=sco&sp=rlc&se=2025-12-01T01:42:59Z&st=2019-09-07T16:42:59Z&spr=https&sig=XbW%2F8PmU1DV0BbZVpvylsU2isokz%2FrYfExWfrrvXu%2Bc%3D",
+					"type": "max",
+					"extension": "msi",
+					"force": true
+				},
+				{
+					"name": "PgAdmin4",
+					"version": "2.19.1.0",
+					"uri": "https://maxstoregary.blob.core.windows.net/uploads/pgadmin4.exe",
+					"type": "max",
+					"extension": "exe",
+					"arguments": "/SILENT",
+					"force": true
+				}
+			],
+			"vnet": {
+				"create": false,
+				"vnetName": "{VNETNAME}",
+				"vnetResourceGroup": "{VNETRG}",
+				"vnetSubnet": "{VNETSUBNET}"
+			},
+			"firewall": {
+				"inbound": [ 
+					{"name": "MaxOffice", "rule": "80.169.18.240/29", "ports": "443 8081 8082 3389", "protocol": "tcp" },
+					{"name": "AQL", "rule": "141.170.24.20/30 109.239.96.132/31 194.145.189.52/31 194.145.190.128/26 194.145.188.224/27 194.145.191.128/27 212.11.68.144/28 78.40.243.192/27", "ports": "5060-20000", "protocol": "udp" },
+					{"name": "AQLsip", "rule": "141.170.24.20/30 109.239.96.132/31 194.145.189.52/31 194.145.190.128/26 194.145.188.224/27 194.145.191.128/27 212.11.68.144/28 78.40.243.192/27", "ports": "5060", "protocol": "tcp" },
+					{"name": "Nexbridge", "rule": "149.5.103.0/24", "ports": "5060-20000", "protocol": "udp" },
+					{"name": "Nexbridgesip", "rule": "149.5.103.0/24", "ports": "5060", "protocol": "tcp" },
+					{"name": "Bastion", "rule": "52.164.187.64", "ports": "3389", "protocol": "tcp" },
+					{"name": "GCI-Signalling", "rule": "217.145.67.2", "ports": "5060", "protocol": "udp"},
+					{"name": "GCI-Media", "rule": "217.145.67.3", "ports": "30000-65000", "protocol": "udp"}
+				],
+				"outbound": []
+			},
+			"dns": [ 
+				{ "name": "customer", "suffix": "", "domain": "maxcontact.com" },
+				{ "name": "customersip", "suffix": "sip", "domain": "maxcontact.com" }, 
+				{ "name": "customer-inbound", "suffix": "-inbound", "domain": "maxcontact.io" } 
+			],
+			"drives": []
+		}
+	]
+}
+}
