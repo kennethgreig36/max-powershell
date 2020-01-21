@@ -1,4 +1,6 @@
-﻿#Supress break in changes warnings for cmdlet New-AzVirtualNetworkSubnetConfig
+﻿# Creates a S2S IPSEC IKEv2 VPN to Azure and a VPN between 2 VNets (1 and 6)
+
+#Supress breaking changes warnings for cmdlet New-AzVirtualNetworkSubnetConfig
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
 #https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-connect-multiple-policybased-rm-ps
@@ -13,9 +15,9 @@ Get-AzSubscription
 
 Select-AzSubscription -SubscriptionName "Max Silo3"
 
-$Sub          = "Max Silo3"
-$RG           = "MRTestVPN"
-$Location     = "UK South"
+$Sub           = "Max Silo3"
+$RG            = "MRTestVPN"
+$Location      = "UK South"
 $VNetName6     = "TestVPNVNet"
 $FESubName6    = "FrontEnd"
 $BESubName6    = "Backend"
@@ -26,14 +28,10 @@ $FESubPrefix6  = "10.41.0.0/24"
 $BESubPrefix6  = "10.42.0.0/24"
 $GWSubPrefix6  = "10.42.255.0/27"
 $DNS1          = "8.8.8.8"
-$GWName1       = "VNet1GW"
 $GWName6       = "VNet6GW"
-$GW1IPName1    = "VNet1GWIP1"
-$GW1IPconf1    = "gw1ipconf6"
 $GW1IPName6    = "VNet6GWIP1"
 $GW1IPconf6    = "gw1ipconf6"
-$connection    = "VNet6toVNet1"
-$connection2   = "VNet1toVNet6" 
+$Connection6  = "VNet6toVNet1"
 
 $LNGName      = "MainOffice"
 $LNGPrefix61   = "10.61.0.0/16"
@@ -53,7 +51,7 @@ New-AzVirtualNetwork -Name $VNetName6 -ResourceGroupName $RG -Location $Location
 
 $gw1pip6    = New-AzPublicIpAddress -Name $GW1IPName6 -ResourceGroupName $RG -Location $Location -AllocationMethod Dynamic
 $vnet6      = Get-AzVirtualNetwork -Name $VNetName6 -ResourceGroupName $RG
-# it's important that you always name your gateway subnet specifically 'GatewaySubnet'
+# It's important that you always name your gateway subnet specifically 'GatewaySubnet'
 $subnet6    = Get-AzVirtualNetworkSubnetConfig -Name "GatewaySubnet" -VirtualNetwork $vnet6
 $gw1ipconf6 = New-AzVirtualNetworkGatewayIpConfig -Name $GW1IPconf6 -Subnet $subnet6 -PublicIpAddress $gw1pip6
 
@@ -62,34 +60,40 @@ $gw1ipconf6 = New-AzVirtualNetworkGatewayIpConfig -Name $GW1IPconf6 -Subnet $sub
 # VpnGw1AZ, VpnGw2AZ and VpnGw3AZ are the zone-resilient versions of VpnGw1, VpnGw2 and VpnGw3.
 # NB.The Basic SKU is not supported for OpenVPN.
 # https://azure.microsoft.com/en-gb/pricing/details/vpn-gateway/
-New-AzVirtualNetworkGateway -Name $GWName1 -ResourceGroupName $RG -Location $Location -IpConfigurations $gw1ipconf6 -GatewayType Vpn -VpnType RouteBased -GatewaySku Standard
+
+Write-Host "Creating Gateways, this may take a while..."
 New-AzVirtualNetworkGateway -Name $GWName6 -ResourceGroupName $RG -Location $Location -IpConfigurations $gw1ipconf6 -GatewayType Vpn -VpnType RouteBased -GatewaySku Standard
+New-AzLocalNetworkGateway -Name $LNGName -ResourceGroupName $RG1 -Location $Location1 -GatewayIpAddress $LNGIP -AddressPrefix $LNGPrefix61,$LNGPrefix62
 
-#New-AzLocalNetworkGateway -Name $LNGName -ResourceGroupName $RG -Location $Location1 -GatewayIpAddress $LNGIP -AddressPrefix $LNGPrefix61,$LNGPrefix62
-
-$ipsecpolicy = New-AzIpsecPolicy -IkeEncryption AES256 -IkeIntegrity SHA384 -DhGroup DHGroup24 -IpsecEncryption AES256 -IpsecIntegrity SHA256 -PfsGroup None -SALifeTimeSeconds 14400 -SADataSizeKilobytes 102400000
-$vnet1gw = Get-AzVirtualNetworkGateway -Name $GWName1  -ResourceGroupName $RG
-$lng = Get-AzLocalNetworkGateway  -Name $LNGName -ResourceGroupName $RG
+$ipsecpolicy6 = New-AzIpsecPolicy -IkeEncryption AES256 -IkeIntegrity SHA384 -DhGroup DHGroup24 -IpsecEncryption AES256 -IpsecIntegrity SHA256 -PfsGroup None -SALifeTimeSeconds 14400 -SADataSizeKilobytes 102400000
+$vnet1gw = Get-AzVirtualNetworkGateway -Name $GWName6  -ResourceGroupName $RG
+$lng6 = Get-AzLocalNetworkGateway -Name $LNGName -ResourceGroupName $RG
 
 # Create an S2S VPN connection and apply the IPsec/IKE policy created in the previous step.
 # "-UsePolicyBasedTrafficSelectors $True" which enables policy-based traffic selectors on the connection.
-New-AzVirtualNetworkGatewayConnection -Name $connection -ResourceGroupName $RG -VirtualNetworkGateway1 $vnet1gw -LocalNetworkGateway2 $lng -Location $Location -ConnectionType IPsec -UsePolicyBasedTrafficSelectors $True -IpsecPolicies $ipsecpolicy -SharedKey 'AzureA1b2C3'
-$connection.UsePolicyBasedTrafficSelectors
-$connection  = Get-AzVirtualNetworkGatewayConnection -Name $connection -ResourceGroupName $RG
+New-AzVirtualNetworkGatewayConnection -Name $Connection16 -ResourceGroupName $RG -VirtualNetworkGateway1 $vnet1gw -LocalNetworkGateway2 $lng6 -Location $Location -ConnectionType IPsec -UsePolicyBasedTrafficSelectors $True -IpsecPolicies $ipsecpolicy6 -SharedKey 'AzureA1b2C3'
+$connection6.UsePolicyBasedTrafficSelectors
+$RG1          = "TestPolicyRG1"
+$Connection16 = "VNet1toSite6"
+$connection6  = Get-AzVirtualNetworkGatewayConnection -Name $Connection16 -ResourceGroupName $RG
 
-Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $connection -UsePolicyBasedTrafficSelectors $True
+Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $connection6 -UsePolicyBasedTrafficSelectors $True
 
 # To Disable UsePolicyBasedTrafficSelectors
 # The following example disables the policy-based traffic selectors option, but leaves the IPsec/IKE policy unchanged:
-Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $connection -UsePolicyBasedTrafficSelectors $False
-
-#VNet to Vnet Gateway Connection
-New-AzVirtualNetworkGatewayConnection -Name $connection -ResourceGroupName $RG -VirtualNetworkGateway1 $vnet1gw -VirtualNetworkGateway2 $vnet6gw -Location $Location -ConnectionType Vnet2Vnet -SharedKey 'AzureA1b2C3'
-$connection  = Get-AzVirtualNetworkGatewayConnection -Name $connection -ResourceGroupName $RG
+Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $connection6 -UsePolicyBasedTrafficSelectors $False
 
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "false"
 
 # Enable OpenVPN on the gateway
 # https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-openvpn
-$gw = Get-AzVirtualNetworkGateway -ResourceGroupName $rgname -name $name
+$gw = Get-AzVirtualNetworkGateway -ResourceGroupName $RG -name $name
 Set-AzVirtualNetworkGateway -VirtualNetworkGateway $gw -VpnClientProtocol OpenVPN
+
+# https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-download-vpndevicescript
+# List the available VPN device models and versions
+# Get-AzVirtualNetworkGatewaySupportedVpnDevice -Name $GWName -ResourceGroupName $RG
+
+# Download the configuration script for the connection
+#Get-AzVirtualNetworkGatewayConnectionVpnDeviceConfigScript -Name $Connection -ResourceGroupName $RG -DeviceVendor Cisco -DeviceFamily ASA -FirmwareVersion 9.8
+# https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-3rdparty-device-config-cisco-asa
