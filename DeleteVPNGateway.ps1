@@ -16,6 +16,16 @@ $GW = "VNet6GW"
 $GW = get-Azvirtualnetworkgateway -Name $GW -ResourceGroupName $RG 
 
 #Check if Virtual Gateway has connections
-#$Conns = get-Azvirtualnetworkgatewayconnection -ResourceGroupName $RG | where-object {$_.VirtualNetworkGateway1.Id}
+$Conns = get-Azvirtualnetworkgatewayconnection -ResourceGroupName $RG | where-object {$_.VirtualNetworkGateway1.Id}
 
-$Conns | ForEach-Object {Get-AzVirtualNetworkGatewayConnection -Name $_.name -ResourceGroupName $RG}
+Write-Host "Deleting Gateway " $GW
+Remove-AzVirtualNetworkGateway -Name $GW -ResourceGroupName $RG -Force
+
+ForEach ($network in $Conns.Name) {
+   Write-Host "Deleting " $network
+   Remove-AzVirtualNetworkGatewayConnection -Name $network -ResourceGroupName $RG -Force
+}
+
+#$Conns | ForEach-Object {Get-AzVirtualNetworkGatewayConnection -Name $_.name -ResourceGroupName $RG}
+
+
