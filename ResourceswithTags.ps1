@@ -21,18 +21,21 @@ foreach ($subscription in $subscriptions) {
 
     foreach($resource in $resources) {
     
-        if ($resource.Tags -ne $null) {
+        if ($resource.Tags.Keys -ne $null) {
               
-              $tags = $resource.Tags.Keys
-              $test = $resource.Tags[$($tags)]
-
+           $resource.Tags.GetEnumerator() | ForEach-Object { 
+                
+                $test = '{0} {1} ' -f $_.key, $_.value
+                Write-Output $test
+           }
+            
               $resourceStats = [pscustomobject]@{
                 Name =$resource.Name
                 ResourceGroupName = $resource.ResourceGroupName
                 ResourceType = $resource.Type
+                Tags = $test
                 
-
-                }
+              }
                 $report+=$resourceStats
         }
             
