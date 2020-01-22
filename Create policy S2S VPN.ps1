@@ -13,24 +13,35 @@ if ($loggedin.Account -eq $null){Write-Warning "You are not currently logged in.
 
 Get-AzSubscription
 
-Select-AzSubscription -SubscriptionName "Max Silo3"
+Select-AzSubscription -SubscriptionName "Microsoft Partner Network"
 
-$Sub           = "Max Silo3"
+$Sub           = "Microsoft Partner Network"
 $RG            = "MRTestVPN"
-$Location      = "UK South"
-$VNetName6     = "TestVPNVNet"
+$Location      = "West Europe"
+$VNetName1     = "TestVPNVNet1"
+$VNetName6     = "TestVPNVNet6"
+$FESubName1    = "FrontEnd"
+$BESubName1    = "Backend"
 $FESubName6    = "FrontEnd"
 $BESubName6    = "Backend"
-$GWSubName6    = "GatewaySubnet"
+$GWSubName1    = "GatewaySubnet1"
+$GWSubName6    = "GatewaySubnet6"
+$VNetPrefix11  = "10.11.0.0/24"
+$VNetPrefix12  = "10.12.0.0/24"
 $VNetPrefix41  = "10.41.0.0/16"
 $VNetPrefix42  = "10.42.0.0/16"
 $FESubPrefix6  = "10.41.0.0/24"
 $BESubPrefix6  = "10.42.0.0/24"
+$GWSubPrefix1  = "10.11.255.0/27"
 $GWSubPrefix6  = "10.42.255.0/27"
 $DNS1          = "8.8.8.8"
+$GWName1       = "VNet1GW"
 $GWName6       = "VNet6GW"
+$GW1IPName1    = "VNet1GWIP1"
+$GW1IPconf1    = "gw1ipconf1"
 $GW1IPName6    = "VNet6GWIP1"
 $GW1IPconf6    = "gw1ipconf6"
+$Connection1  = "VNet1toVNet6"
 $Connection6  = "VNet6toVNet1"
 
 $LNGName      = "MainOffice"
@@ -43,16 +54,27 @@ $LNGIP        = "51.132.13.22"
 
 New-AzResourceGroup -Name $RG -Location $Location
 
+$fesub1 = New-AzVirtualNetworkSubnetConfig -Name $FESubName1 -AddressPrefix $FESubPrefix1
+$besub1 = New-AzVirtualNetworkSubnetConfig -Name $BESubName1 -AddressPrefix $BESubPrefix1
+$gwsub1 = New-AzVirtualNetworkSubnetConfig -Name $GWSubName1 -AddressPrefix $GWSubPrefix1
+
 $fesub6 = New-AzVirtualNetworkSubnetConfig -Name $FESubName6 -AddressPrefix $FESubPrefix6
 $besub6 = New-AzVirtualNetworkSubnetConfig -Name $BESubName6 -AddressPrefix $BESubPrefix6
 $gwsub6 = New-AzVirtualNetworkSubnetConfig -Name $GWSubName6 -AddressPrefix $GWSubPrefix6
 
+New-AzVirtualNetwork -Name $VNetName1 -ResourceGroupName $RG -Location $Location -AddressPrefix $VNetPrefix11,$VNetPrefix12 -Subnet $fesub1,$besub1,$gwsub1
 New-AzVirtualNetwork -Name $VNetName6 -ResourceGroupName $RG -Location $Location -AddressPrefix $VNetPrefix41,$VNetPrefix42 -Subnet $fesub6,$besub6,$gwsub6
+
+$gw1pip1    = New-AzPublicIpAddress -Name $GW1IPName1 -ResourceGroupName $RG -Location $Location -AllocationMethod Dynamic
+$vnet1      = Get-AzVirtualNetwork -Name $VNetName1 -ResourceGroupName $RG
+# It's important that you always name your gateway subnet specifically 'GatewaySubnet'
+$subnet1    = Get-AzVirtualNetworkSubnetConfig -Name "GatewaySubnet1" -VirtualNetwork $vnet1
+$gw1ipconf1 = New-AzVirtualNetworkGatewayIpConfig -Name $GW1IPconf1 -Subnet $subnet1 -PublicIpAddress $gw1pip1
 
 $gw1pip6    = New-AzPublicIpAddress -Name $GW1IPName6 -ResourceGroupName $RG -Location $Location -AllocationMethod Dynamic
 $vnet6      = Get-AzVirtualNetwork -Name $VNetName6 -ResourceGroupName $RG
 # It's important that you always name your gateway subnet specifically 'GatewaySubnet'
-$subnet6    = Get-AzVirtualNetworkSubnetConfig -Name "GatewaySubnet" -VirtualNetwork $vnet6
+$subnet6    = Get-AzVirtualNetworkSubnetConfig -Name "GatewaySubnet6" -VirtualNetwork $vnet6
 $gw1ipconf6 = New-AzVirtualNetworkGatewayIpConfig -Name $GW1IPconf6 -Subnet $subnet6 -PublicIpAddress $gw1pip6
 
 # Gateway SKUs
