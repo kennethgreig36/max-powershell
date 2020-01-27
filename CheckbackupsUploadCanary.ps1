@@ -1,15 +1,4 @@
-﻿###
-#
-# Check Accounts Backup v1.0
-# Features:
-#   Check that the accounts files have backed up to the MaxCore blob storage container
-#   Outputs the results via email
-#
-# Ken Greig Jan-2020
-#
-#
-###
-$loggedin = Get-AzContext
+﻿$loggedin = Get-AzContext
 
 if ($loggedin.Account -eq $null){Write-Warning "You are not currently logged in. Prompting for login." 
         try {Connect-AzAccount -ErrorAction Stop}
@@ -28,26 +17,18 @@ $subscriptionId = "a1cf0514-871b-4671-8cb1-c198c1a23f29"
 Select-AzSubscription $subscriptionId
 
 $connectionstring = "SharedAccessSignature=sv=2018-03-28&ss=bfqt&srt=sco&sp=rwlacup&st=2020-01-27T10%3A32%3A21Z&se=2021-01-28T10%3A32%3A00Z&sig=reDgh32VCpWdur3jb8wR8J7LUR6U9FXJi3vGUgJZBwM%3D;BlobEndpoint=https://accountsbackups.blob.core.windows.net/;FileEndpoint=https://accountsbackups.file.core.windows.net/;QueueEndpoint=https://accountsbackups.queue.core.windows.net/;TableEndpoint=https://accountsbackups.table.core.windows.net/;"
-$container = "backups"
 
+Write-Output "Connecting to blob storage account.."
 $storagecontext = New-AzStorageContext -ConnectionString $connectionstring
+
+$textfile = "canary.txt"
+$textfileinput = "File added"| Out-File $textfile
 
 $currentdate = (Get-Date).AddDays(-1)
 
-$blobs = Get-AzStorageBlob -Container $container -Context $storagecontext | Where-Object {$_.Name -match 'canary.txt' -and $_.LastModified -gt $currentdate}
+Write-Output "Copying file to blob storage.."
 
-if ($blobs) {
+Set-AzStorageBlobContent -Container $container -File $textfile -Context $storagecontext -Force
 
-$output = @()
-
-#$filecount = $report.Count
-#$output += ($filecount).ToString() + " Account Files Backed Up `r`n"
-$output += "Latest File Backed Up " + $blobs[0].Name + " on " + $blobs[0].LastModified
-
-Write-Output $output
-
-} else {
-
-Write-Output "Accounts Backup failed!"
-
-}
+Write-Output "Fetching file from storage container.."
+Write-Output $blob = Get-AzStorageBlob -Container $container -Context $storagecontext

@@ -1,9 +1,9 @@
 ﻿###
 #
-# Check Accounts Backup v1.0
+# Accounts Backup Report v1.0
 # Features:
 #   Check that the accounts files have backed up to the MaxCore blob storage container
-#   Outputs the results via email
+#   Outputs the results to a CSV file
 #
 # Ken Greig Jan-2020
 #
@@ -34,20 +34,19 @@ $storagecontext = New-AzStorageContext -ConnectionString $connectionstring
 
 $currentdate = (Get-Date).AddDays(-1)
 
-$blobs = Get-AzStorageBlob -Container $container -Context $storagecontext | Where-Object {$_.Name -match 'canary.txt' -and $_.LastModified -gt $currentdate}
+$blobs = Get-AzStorageBlob -Container $container -Context $storagecontext | Where-Object {$_.LastModified -gt $currentdate} | sort @{expression="LastModified";Descending=$true}
 
-if ($blobs) {
+$report = @()
 
-$output = @()
+Foreach ($lastestblob in $blobs) {
 
-#$filecount = $report.Count
-#$output += ($filecount).ToString() + " Account Files Backed Up `r`n"
-$output += "Latest File Backed Up " + $blobs[0].Name + " on " + $blobs[0].LastModified
+    $backupdate = $lastestblob.LastModified
 
-Write-Output $output
+           $backupStats = [pscustomobject]@{
+                FilePath = $lastestblob.Name
+                LastModified = $lastestblob.LastModified
+           }
 
-} else {
-
-Write-Output "Accounts Backup failed!"
-
+           $report+=$backupStats
 }
+
